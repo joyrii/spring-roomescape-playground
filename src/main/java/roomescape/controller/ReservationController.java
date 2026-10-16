@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import roomescape.domain.Reservation;
 import roomescape.dto.ReservationRequest;
+import roomescape.exception.NotFoundReservationException;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ public class ReservationController {
                 request.time()
         );
 
+        index.incrementAndGet();
         reservations.add(reservation);
 
         return ResponseEntity
@@ -49,7 +51,10 @@ public class ReservationController {
     public ResponseEntity<Void> deleteReservations(
             @PathVariable Long id
     ) {
-        reservations.removeIf(reservation -> reservation.getId().equals(id));
+        boolean removed = reservations.removeIf(reservation -> reservation.getId().equals(id));
+        if (!removed) {
+            throw new NotFoundReservationException("해당 예약을 찾을 수 없습니다. id: " + id);
+        }
         return ResponseEntity.noContent().build();
     }
 }
